@@ -4,6 +4,8 @@
 import Link from 'next/link';
 import pool, { initializeDatabase } from '../../../lib/db';
 import { revalidatePath } from 'next/cache';
+import { getSessionUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 // --- ACTION SERVEUR ---
 async function triggerDbInit() {
@@ -13,30 +15,35 @@ async function triggerDbInit() {
 }
 
 export default async function AdminDashboard() {
-  // Fausse donnée utilisateur (à remplacer plus tard par la vraie session)
-  const user = {
-    firstname: 'Lando',
-    lastname: 'MORRITZ',
-    avatar: 'L',
-  };
+  // 1. Récupération de la vraie session
+  const session = await getSessionUser();
 
-  // --- VÉRIFICATION DE LA BASE DE DONNÉES ---
-  let dbStatus = { connected: false, error: null, host: '', dbName: '', tables: [] };
-  try {
-    const connection = await pool.getConnection();
-    dbStatus.connected = true;
-    const [infoRows] = await connection.query('SELECT DATABASE() as dbName, @@hostname as host');
-    dbStatus.dbName = infoRows[0].dbName;
-    dbStatus.host = infoRows[0].host;
-    const [tableRows] = await connection.query('SHOW TABLES');
-    dbStatus.tables = tableRows.map(row => Object.values(row)[0]);
-    connection.release();
-  } catch (err) {
-    console.error("🔥 ERREUR CRITIQUE BDD:", err); 
-    dbStatus.error = err.code || err.message || JSON.stringify(err, Object.getOwnPropertyNames(err)) || "Erreur inconnue";
+  // 2. Sécurité : Redirection si non connecté ou rôle insuffisant
+  if (!session || (session.role !== 'ADMIN' && session.role !== 'SYS_ADMIN')) {
+    redirect('/dashboard'); // Ou vers /login selon ton archi
   }
+
+  // --- VÉRIFICATION DE LA BASE DE DONNÉES (Uniquement si SYS_ADMIN) ---
+  let dbStatus = { connected: false, error: null, host: '', dbName: '', tables: [] };
   const expectedTables = 8;
-  const isDbComplete = dbStatus.tables.length === expectedTables;
+  let isDbComplete = false;
+
+  if (session.role === 'SYS_ADMIN') {
+    try {
+      const connection = await pool.getConnection();
+      dbStatus.connected = true;
+      const [infoRows] = await connection.query('SELECT DATABASE() as dbName, @@hostname as host');
+      dbStatus.dbName = infoRows[0].dbName;
+      dbStatus.host = infoRows[0].host;
+      const [tableRows] = await connection.query('SHOW TABLES');
+      dbStatus.tables = tableRows.map(row => Object.values(row)[0]);
+      connection.release();
+    } catch (err) {
+      console.error("🔥 ERREUR CRITIQUE BDD:", err); 
+      dbStatus.error = err.code || err.message || JSON.stringify(err, Object.getOwnPropertyNames(err)) || "Erreur inconnue";
+    }
+    isDbComplete = dbStatus.tables.length === expectedTables;
+  }
 
   // --- MENU ADMIN ---
   const adminItems = [
@@ -89,10 +96,10 @@ export default async function AdminDashboard() {
   return (
     <div className="w-full max-w-6xl mx-auto px-4 md:px-8 py-8">
       
-      {/* En-tête */}
+      {/* En-tête (Mis à jour avec la session) */}
       <div className="mb-10 text-center md:text-left">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-          Bonjour, {user.firstname} {user.lastname}
+          Bonjour, {session.first_name} {session.last_name}
         </h1>
       </div>
 
@@ -127,72 +134,73 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      {/* Widget Base de Données */}
-      <div>
-        <h2 className="text-lg font-bold text-[#7b68ee] uppercase tracking-wider mb-4 border-b border-[#7b68ee]/30 pb-2 inline-block">
-          🗄️ État du Système
-        </h2>
-        <section className="glass-panel max-w-4xl rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl p-6 shadow-lg">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-200 pb-6 mb-6">
-            <div>
-              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                Diagnostic MariaDB
-              </h3>
-              <p className="text-sm text-gray-500 mt-1">Vérification de la connexion et intégrité des tables.</p>
-            </div>
-            <div className="flex items-center gap-3 bg-white/60 px-4 py-2 rounded-xl shadow-sm border border-white">
-              <div className={`w-3 h-3 rounded-full animate-pulse ${dbStatus.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              <span className="text-sm font-bold text-gray-700">
-                {dbStatus.connected ? 'Connecté' : 'Erreur de Connexion'}
-              </span>
-            </div>
-          </div>
-
-          {dbStatus.connected ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
-                  <span className="text-gray-500">Hôte (Host)</span>
-                  <span className="font-semibold text-gray-800">{dbStatus.host}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
-                  <span className="text-gray-500">Base active</span>
-                  <span className="font-semibold text-gray-800">{dbStatus.dbName}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
-                  <span className="text-gray-500">Tables trouvées</span>
-                  <span className="font-semibold text-gray-800">{dbStatus.tables.length} / {expectedTables}</span>
-                </div>
+      {/* Widget Base de Données — Affiché UNIQUEMENT pour les SYS_ADMIN */}
+      {session.role === 'SYS_ADMIN' && (
+        <div>
+          <h2 className="text-lg font-bold text-[#7b68ee] uppercase tracking-wider mb-4 border-b border-[#7b68ee]/30 pb-2 inline-block">
+            🗄️ État du Système
+          </h2>
+          <section className="glass-panel max-w-4xl rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl p-6 shadow-lg">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-200 pb-6 mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  Diagnostic MariaDB
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">Vérification de la connexion et intégrité des tables.</p>
               </div>
-
-              <div className="bg-white/40 rounded-xl p-4 border border-white/50 flex flex-col justify-center">
-                {isDbComplete ? (
-                  <div className="text-center text-sm">
-                    <div className="text-green-500 text-3xl mb-2">✓</div>
-                    <p className="font-bold text-gray-800">Base de données aux normes.</p>
-                    <p className="text-gray-500 mt-1">Les {expectedTables} tables requises sont prêtes.</p>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <p className="text-sm text-orange-600 font-bold mb-3">Attention : Il manque des tables.</p>
-                    <form action={triggerDbInit}>
-                      <button type="submit" className="px-4 py-2 bg-linear-to-r from-[#7b68ee] to-[#ff69b4] text-white text-sm font-bold rounded-lg shadow-md hover:scale-105 transition-transform cursor-pointer">
-                        Initialiser les tables
-                      </button>
-                    </form>
-                  </div>
-                )}
+              <div className="flex items-center gap-3 bg-white/60 px-4 py-2 rounded-xl shadow-sm border border-white">
+                <div className={`w-3 h-3 rounded-full animate-pulse ${dbStatus.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <span className="text-sm font-bold text-gray-700">
+                  {dbStatus.connected ? 'Connecté' : 'Erreur de Connexion'}
+                </span>
               </div>
             </div>
-          ) : (
-            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm">
-              <p className="font-bold mb-1">Impossible de se connecter :</p>
-              <p className="font-mono bg-red-100 p-2 rounded text-xs overflow-x-auto">{dbStatus.error}</p>
-            </div>
-          )}
-        </section>
-      </div>
 
+            {dbStatus.connected ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
+                    <span className="text-gray-500">Hôte (Host)</span>
+                    <span className="font-semibold text-gray-800">{dbStatus.host}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
+                    <span className="text-gray-500">Base active</span>
+                    <span className="font-semibold text-gray-800">{dbStatus.dbName}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
+                    <span className="text-gray-500">Tables trouvées</span>
+                    <span className="font-semibold text-gray-800">{dbStatus.tables.length} / {expectedTables}</span>
+                  </div>
+                </div>
+
+                <div className="bg-white/40 rounded-xl p-4 border border-white/50 flex flex-col justify-center">
+                  {isDbComplete ? (
+                    <div className="text-center text-sm">
+                      <div className="text-green-500 text-3xl mb-2">✓</div>
+                      <p className="font-bold text-gray-800">Base de données aux normes.</p>
+                      <p className="text-gray-500 mt-1">Les {expectedTables} tables requises sont prêtes.</p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <p className="text-sm text-orange-600 font-bold mb-3">Attention : Il manque des tables.</p>
+                      <form action={triggerDbInit}>
+                        <button type="submit" className="px-4 py-2 bg-linear-to-r from-[#7b68ee] to-[#ff69b4] text-white text-sm font-bold rounded-lg shadow-md hover:scale-105 transition-transform cursor-pointer">
+                          Initialiser les tables
+                        </button>
+                      </form>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm">
+                <p className="font-bold mb-1">Impossible de se connecter :</p>
+                <p className="font-mono bg-red-100 p-2 rounded text-xs overflow-x-auto">{dbStatus.error}</p>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,0 +1,126 @@
+/* app/globals.css */
+/* Global styles for the application, including Tailwind CSS imports and custom utility classes */
+
+
+/* Importation de Tailwind CSS pour les styles utilitaires */
+@import "tailwindcss";
+
+
+/* Variables de couleurs personnalisées pour le thème de l'application */
+:root {
+  --color-pink: #ffb3c6;
+  --color-blue: #a2d2ff;
+  --color-purple: #cdb4db;
+}
+
+/* Définition de la police d'affichage pour l'ensemble de l'application, utilisant la variable de police personnalisée */
+@theme {
+  --font-display: var(--font-poppins);
+}
+
+/* Styles globaux pour le corps de la page, incluant la suppression du débordement horizontal et l'application de la police d'affichage définie précédemment */
+body {
+  overflow-x: hidden;
+  font-family: var(--font-display), sans-serif;
+  min-height: 100vh;
+}
+
+/* Styles pour l'animation de fond, créant un dégradé animé qui couvre toute la page et est flouté pour un effet visuel doux */
+.background-animate {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -1;
+  background: linear-gradient(-45deg, var(--color-pink), var(--color-purple), var(--color-blue), var(--color-pink));
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  filter: blur(40px);
+}
+
+/* Définition de l'animation pour le fond, qui fait défiler le dégradé de couleurs à travers différentes positions pour créer un effet dynamique et fluide */
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Styles pour les panneaux de type "verre dépoli", utilisant une combinaison de transparence, de flou et d'ombres pour créer un effet visuel élégant et moderne */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+/* Styles pour les éléments qui doivent apparaître avec une animation de glissement, initialement cachés et décalés vers le bas, puis animés pour devenir visibles et revenir à leur position d'origine */
+.slide-in {
+  animation: slideIn 0.8s ease forwards;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+/* Définition de l'animation de glissement, qui fait apparaître les éléments en les faisant glisser vers le haut et en augmentant leur opacité pour un effet d'entrée fluide et attrayant */
+@keyframes slideIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Styles pour les champs de saisie, utilisant des classes utilitaires pour créer des champs de saisie élégants et fonctionnels avec des transitions pour les interactions de focus */
+@utility input-field {
+  @apply w-full p-4 rounded-xl outline-none transition-all duration-300 bg-white/50 focus:bg-white/80 focus:shadow-md border border-transparent focus:border-[#7b68ee]/30;
+}
+
+/* Styles pour les étiquettes des champs de saisie, positionnées de manière absolue pour flotter au-dessus des champs de saisie, avec des transitions pour les interactions de focus et de saisie */
+@utility input-label {
+  @apply absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-all duration-300;
+}
+
+/* Styles pour les étiquettes des champs de saisie lorsqu'ils sont en focus ou lorsqu'ils contiennent du texte, les faisant flotter au-dessus du champ de saisie avec une taille de police réduite et un fond pour améliorer la lisibilité */
+.input-field:focus + .input-label,
+.input-field:not(:placeholder-shown) + .input-label {
+  top: 0;
+  font-size: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.6);
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border-radius: 0.25rem;
+  color: #7b68ee;
+}
+
+/* Styles pour les éléments de page du dashboard pendant l'animation d'entrée, assurant qu'ils sont initialement cachés, décalés vers le bas et flous, puis animés pour devenir visibles et revenir à leur position d'origine avec une transition fluide */
+.dash-page-enter {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+
+  opacity: 0;
+  transform: translateY(10px);
+  filter: blur(6px);
+  animation: dashEnter 450ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Styles pour les éléments de page du dashboard pendant l'animation d'entrée, assurant qu'ils occupent tout l'espace disponible et sont correctement alignés pour une présentation cohérente et attrayante */
+.dash-page-enter > * {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Définition de l'animation d'entrée pour les éléments de page du dashboard, qui fait apparaître les éléments en les faisant glisser vers le haut, en augmentant leur opacité et en réduisant le flou pour un effet d'entrée fluide et attrayant */
+@keyframes dashEnter {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Styles pour les utilisateurs qui ont activé la préférence de réduction des animations, désactivant les animations et les effets de transition pour une expérience plus confortable et accessible */
+@media (prefers-reduced-motion: reduce) {
+  .dash-page-enter {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: none;
+  }
+}

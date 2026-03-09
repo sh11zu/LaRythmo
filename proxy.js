@@ -22,6 +22,18 @@ export function proxy(request) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
+  // Vérifier le rôle pour les routes /admin
+  if (token && path.startsWith("/admin")) {
+    try {
+      const payload = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
+      if (payload.role !== 'ADMIN' && payload.role !== 'SYS_ADMIN') {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    } catch {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 

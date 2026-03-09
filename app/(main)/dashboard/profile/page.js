@@ -1,11 +1,28 @@
 // app/(main)/dashboard/profile/page.js
-// Page affichant les informations personnelles de l'utilisateur et lui permettant de les modifier
+// Page affichant les informations personnelles de l'utilisateur
 
-'use client';
-
+import { getSessionUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import pool from '@/lib/db';
 
-export default function MyProfile() {
+const ROLE_LABEL = {
+  USER:      'Représentant Légal (Parent)',
+  ADMIN:     'Administrateur',
+  SYS_ADMIN: 'Super Administrateur',
+};
+
+export default async function MyProfile() {
+  const session = await getSessionUser();
+  if (!session) redirect('/login');
+
+  const [rows] = await pool.query(
+    'SELECT id, email, first_name, last_name, gender, address, phone, role FROM users WHERE id = ?',
+    [session.id]
+  );
+  const user = rows[0];
+  if (!user) redirect('/login');
+
   return (
     <div className="w-full max-w-4xl mx-auto px-4 md:px-8 py-8">
       <div className="flex items-center gap-4 mb-6">
@@ -18,7 +35,7 @@ export default function MyProfile() {
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#7b68ee]/10 text-[#7b68ee] rounded-full border border-[#7b68ee]/20">
             <div>
               <p className="text-xs font-bold uppercase tracking-wide">Type de compte</p>
-              <p className="text-sm font-bold">Représentant Légal (Parent)</p>
+              <p className="text-sm font-bold">{ROLE_LABEL[user.role] ?? user.role}</p>
             </div>
           </div>
         </div>
@@ -27,33 +44,33 @@ export default function MyProfile() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-bold text-gray-500 ml-2 uppercase">Prénom</label>
-              <input type="text" value="azerty" disabled className="input-field bg-gray-100/50 cursor-not-allowed" />
+              <input type="text" defaultValue={user.first_name} disabled className="input-field bg-gray-100/50 cursor-not-allowed" />
             </div>
             <div>
               <label className="text-xs font-bold text-gray-500 ml-2 uppercase">Nom</label>
-              <input type="text" value="AZERTY" disabled className="input-field bg-gray-100/50 cursor-not-allowed" />
+              <input type="text" defaultValue={user.last_name} disabled className="input-field bg-gray-100/50 cursor-not-allowed" />
             </div>
           </div>
 
           <div>
             <label className="text-xs font-bold text-gray-500 ml-2 uppercase">Email</label>
-            <input type="email" value="azerty@mail.com" className="input-field" />
+            <input type="email" defaultValue={user.email} className="input-field" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-bold text-gray-500 ml-2 uppercase">Téléphone</label>
-              <input type="tel" value="06 12 34 56 78" className="input-field" />
+              <input type="tel" defaultValue={user.phone} className="input-field" />
             </div>
             <div>
-              <label className="text-xs font-bold text-gray-500 ml-2 uppercase">Code Postal</label>
-              <input type="text" value="75000" className="input-field" />
+              <label className="text-xs font-bold text-gray-500 ml-2 uppercase">Genre</label>
+              <input type="text" defaultValue={user.gender} disabled className="input-field bg-gray-100/50 cursor-not-allowed" />
             </div>
           </div>
 
           <div>
             <label className="text-xs font-bold text-gray-500 ml-2 uppercase">Adresse complète</label>
-            <input type="text" value="12 Rue de la Danse, Paris" className="input-field" />
+            <input type="text" defaultValue={user.address} className="input-field" />
           </div>
 
           <button className="w-full py-4 mt-4 rounded-xl text-white font-bold text-lg bg-linear-to-r from-emerald-400 to-teal-400 hover:shadow-lg hover:-translate-y-1 transition-all">

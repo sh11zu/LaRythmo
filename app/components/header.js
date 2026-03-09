@@ -4,19 +4,24 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
-export default function Navbar() {
+export default function Navbar({ user }) {
   const pathname = usePathname();
+  const router = useRouter();
 
-  const user = {
-    firstname: 'Lando',
-    lastname: 'MORRITZ',
-    avatar: 'LM',
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
   };
+
+  const firstname = user?.first_name ?? '';
+  const lastname = user?.last_name ?? '';
+  const avatar = firstname && lastname ? `${firstname[0]}${lastname[0]}` : '?';
 
   const isAdmin = pathname?.startsWith('/admin');
   const userActive = !isAdmin;
+  const isAdminRole = user?.role === 'ADMIN' || user?.role === 'SYS_ADMIN';
 
   return (
     <nav className="fixed top-0 left-0 right-0 h-20 glass-panel border-b border-white/40 z-50 px-6 md:px-12 flex justify-between items-center shadow-sm backdrop-blur-md">
@@ -36,19 +41,19 @@ export default function Navbar() {
         {/* Info Utilisateur */}
         <div className="flex items-center gap-3">
           <div className="text-right hidden md:block">
-            <p className="text-sm font-bold text-gray-700 leading-tight">{user.lastname}</p>
-            <p className="text-xs text-gray-500 font-medium">{user.firstname}</p>
+            <p className="text-sm font-bold text-gray-700 leading-tight">{lastname}</p>
+            <p className="text-xs text-gray-500 font-medium">{firstname}</p>
           </div>
           <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#7b68ee] to-[#ff69b4] flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/50 cursor-pointer hover:scale-105 transition-transform">
-            {user.avatar}
+            {avatar}
           </div>
         </div>
 
-        {/* --- TOGGLE ICON ONLY (SLIDING PILL) --- */}
-        <div className="relative flex items-center w-24 h-10 p-1 bg-white/40 border border-white/60 rounded-full shadow-inner backdrop-blur-sm">
-          
+        {/* --- TOGGLE ICON ONLY (SLIDING PILL) — visible admins uniquement --- */}
+        {isAdminRole && <div className="relative flex items-center w-24 h-10 p-1 bg-white/40 border border-white/60 rounded-full shadow-inner backdrop-blur-sm">
+
           {/* La Pilule Animée (Background qui bouge) */}
-          <div 
+          <div
             className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-linear-to-r from-[#7b68ee] to-[#ff69b4] shadow-md transition-all duration-500 cubic-bezier(0.25, 1, 0.5, 1)
               ${userActive ? 'left-1' : 'left-[calc(50%+2px)]'}
             `}
@@ -75,18 +80,18 @@ export default function Navbar() {
           >
             <svg className="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
           </Link>
-        </div>
+        </div>}
 
         {/* --- BOUTON DECONNEXION (Hover Inversé) --- */}
-        <Link 
-          href="/" 
-          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold text-gray-600 bg-white/40 border border-white/50 shadow-sm 
-                       hover:bg-red-500 hover:text-white hover:border-red-600 hover:shadow-red-500/40 
-                       transition-all duration-300 group"
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold text-gray-600 bg-white/40 border border-white/50 shadow-sm
+                       hover:bg-red-500 hover:text-white hover:border-red-600 hover:shadow-red-500/40
+                       transition-all duration-300 group cursor-pointer"
         >
           <span>Déconnexion</span>
           <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-        </Link>
+        </button>
 
       </div>
     </nav>

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"c:/Users/ethan.masneuf/Documents/LaRythmo/app/\\(main\\)/dashboard/family/[id]/\")",
+      "Bash(ls \"c:/Users/ethan.masneuf/Documents/LaRythmo/app/\\(main\\)/dashboard/family/[id]/edit/\")"
+    ]
+  }
+}

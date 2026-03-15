@@ -312,7 +312,7 @@ function ConfirmSignModal({ label, onConfirm, onClose }) {
    Composant principal
    ───────────────────────────────────────────── */
 
-export default function DossierDocuments({ docs, memberName, guardianName, season, contacts, inscriptionId }) {
+export default function DossierDocuments({ docs, memberName, guardianName, season, contacts, inscriptionId, adminView = false }) {
   const router = useRouter();
   const [modal, setModal] = useState(null);
   const [localSigned, setLocalSigned] = useState(new Set());
@@ -383,29 +383,33 @@ export default function DossierDocuments({ docs, memberName, guardianName, seaso
           <IconBtn href={hasFile ? doc.file_path : undefined} disabled={!hasFile} title="Voir">
             <IcoEye />
           </IconBtn>
-          <IconBtn onClick={() => {}} title={hasFile ? 'Remplacer' : 'Ajouter'}>
-            {hasFile ? <IcoRefresh /> : <IcoPlus />}
-          </IconBtn>
+          {!adminView && (
+            <IconBtn onClick={() => {}} title={hasFile ? 'Remplacer' : 'Ajouter'}>
+              {hasFile ? <IcoRefresh /> : <IcoPlus />}
+            </IconBtn>
+          )}
         </>
       );
     } else if (kind === 'sign_static') {
       buttons = (
         <>
           <IconBtn onClick={() => setModal({ type: 'pdf_sign', docType: type, label, pdfPath, readOnly: true })} title="Voir"><IcoEye /></IconBtn>
-          <IconBtn
-            onClick={() => {
-              if (signed) return;
-              if (pdfSign) {
-                setModal({ type: 'pdf_sign', docType: type, label, pdfPath });
-              } else {
-                setModal({ type: 'confirm_static', docType: type, label });
-              }
-            }}
-            disabled={signed}
-            title={signed ? 'Déjà signé' : 'Signer'}
-          >
-            <IcoPen />
-          </IconBtn>
+          {!adminView && (
+            <IconBtn
+              onClick={() => {
+                if (signed) return;
+                if (pdfSign) {
+                  setModal({ type: 'pdf_sign', docType: type, label, pdfPath });
+                } else {
+                  setModal({ type: 'confirm_static', docType: type, label });
+                }
+              }}
+              disabled={signed}
+              title={signed ? 'Déjà signé' : 'Signer'}
+            >
+              <IcoPen />
+            </IconBtn>
+          )}
           <IconBtn href={pdfPath} download title="Télécharger"><IcoDownload /></IconBtn>
         </>
       );
@@ -419,13 +423,15 @@ export default function DossierDocuments({ docs, memberName, guardianName, seaso
           >
             <IcoEye />
           </IconBtn>
-          <IconBtn
-            onClick={() => !signed && openGeneratedDoc(type, false)}
-            disabled={signed}
-            title={signed ? 'Déjà signé' : 'Signer'}
-          >
-            <IcoPen />
-          </IconBtn>
+          {!adminView && (
+            <IconBtn
+              onClick={() => !signed && openGeneratedDoc(type, false)}
+              disabled={signed}
+              title={signed ? 'Déjà signé' : 'Signer'}
+            >
+              <IcoPen />
+            </IconBtn>
+          )}
           {signed && (
             <IconBtn
               href={`/api/documents/cerfa-pdf?inscriptionId=${inscriptionId}`}
@@ -447,13 +453,15 @@ export default function DossierDocuments({ docs, memberName, guardianName, seaso
           >
             <IcoEye />
           </IconBtn>
-          <IconBtn
-            onClick={() => !signed && openGeneratedDoc(type, false)}
-            disabled={signed}
-            title={signed ? 'Déjà signé' : 'Signer'}
-          >
-            <IcoPen />
-          </IconBtn>
+          {!adminView && (
+            <IconBtn
+              onClick={() => !signed && openGeneratedDoc(type, false)}
+              disabled={signed}
+              title={signed ? 'Déjà signé' : 'Signer'}
+            >
+              <IcoPen />
+            </IconBtn>
+          )}
         </>
       );
     }

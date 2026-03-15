@@ -18,15 +18,25 @@ export async function GET(request) {
   const view = searchParams.get('view') === '1';
   if (!inscriptionId) return NextResponse.json({ error: 'inscriptionId manquant' }, { status: 400 });
 
-  // Vérifier ownership + récupérer le file_path
-  const [[row]] = await pool.query(
-    `SELECT d.file_path, m.first_name, m.last_name
-     FROM inscriptions i
-     JOIN members m ON m.id = i.member_id
-     JOIN documents d ON d.member_id = i.member_id AND d.season = i.season AND d.type = 'SANTE_ATTESTATION'
-     WHERE i.id = ? AND m.user_id = ? AND d.signed_at IS NOT NULL`,
-    [inscriptionId, session.id]
-  );
+  // Vérifier ownership (ou rôle admin) + récupérer le file_path
+  const isAdmin = session.role === 'ADMIN' || session.role === 'SYS_ADMIN';
+  const [[row]] = isAdmin
+    ? await pool.query(
+        `SELECT d.file_path, m.first_name, m.last_name
+         FROM inscriptions i
+         JOIN members m ON m.id = i.member_id
+         JOIN documents d ON d.member_id = i.member_id AND d.season = i.season AND d.type = 'SANTE_ATTESTATION'
+         WHERE i.id = ? AND d.signed_at IS NOT NULL`,
+        [inscriptionId]
+      )
+    : await pool.query(
+        `SELECT d.file_path, m.first_name, m.last_name
+         FROM inscriptions i
+         JOIN members m ON m.id = i.member_id
+         JOIN documents d ON d.member_id = i.member_id AND d.season = i.season AND d.type = 'SANTE_ATTESTATION'
+         WHERE i.id = ? AND m.user_id = ? AND d.signed_at IS NOT NULL`,
+        [inscriptionId, session.id]
+      );
 
   if (!row?.file_path) return NextResponse.json({ error: 'Fichier introuvable' }, { status: 404 });
 

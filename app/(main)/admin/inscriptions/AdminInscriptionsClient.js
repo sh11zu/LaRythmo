@@ -149,7 +149,7 @@ export default function AdminInscriptionsClient({ inscriptions, seasons }) {
                     <tr
                       key={ins.id}
                       className="hover:bg-white/40 transition-colors cursor-pointer"
-                      onClick={() => window.location.href = `/dashboard/inscriptions/${ins.id}`}
+                      onClick={() => window.location.href = `/admin/inscriptions/${ins.id}`}
                     >
                       {/* Élève */}
                       <td className="px-5 py-4">

@@ -1,81 +1,76 @@
 // app/(main)/dashboard/inscriptions/page.js
-// Page listant les inscriptions liés à l'utilisateur (cours pour lui-même et pour ses enfants)
 
-'use client';
+import pool from '@/lib/db';
+import { getSessionUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import InscriptionsClient from './InscriptionsClient';
 
-import Link from 'next/link';
+export default async function MyInscriptions() {
+  const session = await getSessionUser();
+  if (!session) redirect('/login');
 
-export default function MyInscriptions() {
-  const inscriptions = [
-    { id: 1, course: "Salsa Cubaine (Débutant)", student: "Moi-même (AZERTY)", price: "250€", status: "Validé", date: "12/09/2023" },
-    { id: 2, course: "Eveil Danse (4-6 ans)", student: "Léo (Enfant)", price: "180€", status: "En attente", date: "14/09/2023" },
-  ];
-
-  return (
-    <div className="w-full max-w-6xl mx-auto px-4 md:px-8 py-8">
-      <div className="flex items-center gap-4 mb-6">
-        <Link href="/dashboard" className="text-gray-500 hover:text-[#7b68ee]">← Retour</Link>
-        <h1 className="text-3xl font-bold text-gray-800">Mes inscriptions</h1>
-      </div>
-
-      <div className="glass-panel rounded-2xl overflow-hidden border border-white/60 shadow-lg">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-white/50 text-gray-600 text-xs uppercase tracking-wider">
-                <th className="p-5 font-bold border-b border-gray-200">Cours</th>
-                <th className="p-5 font-bold border-b border-gray-200">Élève</th>
-                <th className="p-5 font-bold border-b border-gray-200">Prix/An</th>
-                <th className="p-5 font-bold border-b border-gray-200">Contrat</th>
-                <th className="p-5 font-bold border-b border-gray-200 text-right">Statut</th>
-              </tr>
-            </thead>
-
-            <tbody className="text-sm bg-white/20">
-              {inscriptions.map((ins) => (
-                <tr key={ins.id} className="hover:bg-white/40 transition-colors border-b border-gray-100 last:border-0">
-                  <td className="p-5 font-bold text-gray-800">
-                    {ins.course}
-                    <span className="block text-xs text-gray-400 font-normal mt-1">
-                      Inscrit le {ins.date}
-                    </span>
-                  </td>
-
-                  <td className="p-5 text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
-                        {ins.student.charAt(0)}
-                      </div>
-                      {ins.student}
-                    </div>
-                  </td>
-
-                  <td className="p-5 font-mono text-gray-700">{ins.price}</td>
-
-                  <td className="p-5">
-                    <button className="flex items-center gap-1 text-xs font-bold text-[#7b68ee] hover:underline bg-white/50 px-2 py-1 rounded border border-[#7b68ee]/20">
-                      <span>📄</span> Télécharger PDF
-                    </button>
-                  </td>
-
-                  <td className="p-5 text-right">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                        ins.status === 'Validé'
-                          ? 'bg-green-100 text-green-700 border-green-200'
-                          : 'bg-orange-100 text-orange-700 border-orange-200'
-                      }`}
-                    >
-                      {ins.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-
-          </table>
-        </div>
-      </div>
-    </div>
+  const [rows] = await pool.query(
+    `SELECT
+       i.id,
+       i.season,
+       i.payment_status,
+       i.registration_status,
+       i.created_at,
+       m.id            AS member_id,
+       m.first_name    AS member_first_name,
+       m.last_name     AS member_last_name,
+       m.gender        AS member_gender,
+       p.name          AS package_name,
+       p.price         AS package_price,
+       GROUP_CONCAT(c.name ORDER BY c.day_of_week, c.start_time SEPARATOR '|||') AS course_names,
+       SUM(c.single_price) AS total_single_price
+     FROM inscriptions i
+     JOIN members m ON m.id = i.member_id
+     LEFT JOIN packages p ON p.id = i.package_id
+     LEFT JOIN inscription_courses ic ON ic.inscription_id = i.id
+     LEFT JOIN courses c ON c.id = ic.course_id
+     WHERE m.user_id = ?
+     GROUP BY i.id
+     ORDER BY m.last_name, m.first_name, i.season DESC`,
+    [session.id]
   );
+
+  // Grouper par membre
+  const groupMap = new Map();
+  const seasonsSet = new Set();
+
+  for (const r of rows) {
+    seasonsSet.add(r.season);
+
+    if (!groupMap.has(r.member_id)) {
+      groupMap.set(r.member_id, {
+        memberId:  r.member_id,
+        firstName: r.member_first_name,
+        lastName:  r.member_last_name,
+        gender:    r.member_gender,
+        inscriptions: [],
+      });
+    }
+
+    groupMap.get(r.member_id).inscriptions.push({
+      id:                 r.id,
+      season:             r.season,
+      paymentStatus:      r.payment_status,
+      registrationStatus: r.registration_status,
+      createdAt:          r.created_at,
+      packageName:        r.package_name ?? null,
+      price:              r.package_price != null
+                            ? Number(r.package_price)
+                            : r.total_single_price != null
+                              ? Number(r.total_single_price)
+                              : null,
+      courseNames: r.course_names ? r.course_names.split('|||') : [],
+    });
+  }
+
+  const memberGroups = [...groupMap.values()];
+  // Saisons triées du plus récent au plus ancien
+  const seasons = [...seasonsSet].sort((a, b) => b.localeCompare(a));
+
+  return <InscriptionsClient memberGroups={memberGroups} seasons={seasons} />;
 }

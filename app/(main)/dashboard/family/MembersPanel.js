@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 
-const GENDER_AVATAR = { MALE: '👦', FEMALE: '👧', OTHER: '🧒' };
-const GENDER_COLOR  = { MALE: 'bg-blue-100 text-blue-600', FEMALE: 'bg-pink-100 text-pink-600', OTHER: 'bg-purple-100 text-purple-600' };
+const GENDER_COLOR = { MALE: 'bg-blue-100 text-blue-600', FEMALE: 'bg-pink-100 text-pink-600', OTHER: 'bg-purple-100 text-purple-600' };
 
 function fmtDate(iso) {
   if (!iso) return '—';
@@ -31,7 +30,6 @@ export default function MembersPanel({ initialMembers }) {
 
       {initialMembers.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p className="text-4xl mb-4">👨‍👩‍👧</p>
           <p className="font-medium">Aucun membre enregistré.</p>
           <p className="text-sm mt-1">Ajoutez un membre pour commencer une inscription.</p>
         </div>
@@ -43,8 +41,8 @@ export default function MembersPanel({ initialMembers }) {
               href={`/dashboard/family/${m.id}`}
               className="glass-panel p-6 rounded-3xl border border-white/60 flex items-center gap-5 hover:bg-white/50 hover:shadow-lg hover:-translate-y-0.5 transition-all group"
             >
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-inner shrink-0 ${GENDER_COLOR[m.gender] ?? 'bg-gray-100 text-gray-500'}`}>
-                {GENDER_AVATAR[m.gender] ?? '🧒'}
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold shadow-inner shrink-0 ${GENDER_COLOR[m.gender] ?? 'bg-gray-100 text-gray-500'}`}>
+                {m.firstName?.[0]?.toUpperCase() ?? '?'}
               </div>
 
               <div className="flex-1 min-w-0">
@@ -57,7 +55,7 @@ export default function MembersPanel({ initialMembers }) {
                   )}
                 </div>
                 <div className="text-sm text-gray-500 mt-1 space-y-0.5">
-                  <p>🎂 <span className="font-medium text-gray-700">{fmtDate(m.birthDate)}</span></p>
+                  <p>Né(e) le <span className="font-medium text-gray-700">{fmtDate(m.birthDate)}</span></p>
                   <p>
                     <span className="font-medium text-gray-700">{m.inscriptionCount}</span>
                     {' '}inscription{m.inscriptionCount !== 1 ? 's' : ''}

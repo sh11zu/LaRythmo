@@ -92,13 +92,17 @@ CREATE TABLE IF NOT EXISTS documents (
     id INT AUTO_INCREMENT PRIMARY KEY,
     member_id INT NOT NULL,
     season VARCHAR(9) NOT NULL,
-    type ENUM('PHOTO', 'CONTRACT', 'PARENTAL_AUTH', 'MEDICAL_CERTIFICATE', 'SANTE_ATTESTATION', 'OTHER') NOT NULL,
-    file_path VARCHAR(255) NOT NULL,
+    type ENUM('PHOTO', 'CONTRACT', 'PARENTAL_AUTH', 'SORTIE', 'IMAGE', 'MEDICAL_CERTIFICATE', 'SANTE_ATTESTATION', 'OTHER') NOT NULL,
+    file_path VARCHAR(255) NULL DEFAULT NULL,    -- NULL pour les docs à signer (non uploadés)
     status ENUM('PENDING', 'VALIDATED', 'REJECTED') DEFAULT 'PENDING',
     rejection_reason TEXT,
+    signed_at TIMESTAMP NULL DEFAULT NULL,        -- renseigné quand le document est signé
+    signature_ip VARCHAR(45) NULL DEFAULT NULL,   -- IP du signataire
+    signature_data JSON NULL DEFAULT NULL,        -- données du formulaire au moment de la signature
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
+    UNIQUE KEY uq_doc (member_id, season, type),  -- un doc de chaque type par membre par saison
     INDEX (season)
 );
 

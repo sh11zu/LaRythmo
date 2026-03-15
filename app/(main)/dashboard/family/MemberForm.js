@@ -20,8 +20,7 @@ export function joinAddress(line, postal, city) {
 
 /* ── Constantes ── */
 
-const GENDER_AVATAR = { MALE: '👦', FEMALE: '👧', OTHER: '🧒' };
-const GENDER_COLOR  = { MALE: 'bg-blue-100 text-blue-600', FEMALE: 'bg-pink-100 text-pink-600', OTHER: 'bg-purple-100 text-purple-600' };
+const GENDER_COLOR = { MALE: 'bg-blue-100 text-blue-600', FEMALE: 'bg-pink-100 text-pink-600', OTHER: 'bg-purple-100 text-purple-600' };
 
 const REG_STATUS = {
   DRAFT:              { label: 'Brouillon',  cls: 'bg-gray-200 text-gray-700' },
@@ -185,7 +184,7 @@ function LinkBadge({ value, onChange, colorCls = 'bg-[#7b68ee]/10 text-[#7b68ee]
         </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50 min-w-[130px]">
+        <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50 min-w-32.5">
           {LINK_OPTIONS.map(opt => (
             <button
               key={opt}
@@ -328,8 +327,8 @@ export default function MemberForm({
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-8 gap-4">
         <div className="flex items-center gap-5">
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-inner shrink-0 ${GENDER_COLOR[form.gender] ?? 'bg-gray-100'}`}>
-            {GENDER_AVATAR[form.gender] ?? '🧒'}
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold shadow-inner shrink-0 ${GENDER_COLOR[form.gender] ?? 'bg-gray-100 text-gray-500'}`}>
+            {form.firstName?.[0]?.toUpperCase() || (form.gender === 'FEMALE' ? 'F' : form.gender === 'MALE' ? 'M' : '?')}
           </div>
           <div>
             <Link href={backUrl} className="text-gray-400 hover:text-[#7b68ee] text-sm transition-colors block mb-1">

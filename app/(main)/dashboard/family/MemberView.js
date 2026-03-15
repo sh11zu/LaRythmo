@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import { parseAddress } from './MemberForm';
 
-const GENDER_LABEL  = { MALE: 'Masculin', FEMALE: 'Féminin', OTHER: 'Autre' };
-const GENDER_AVATAR = { MALE: '👦', FEMALE: '👧', OTHER: '🧒' };
-const GENDER_COLOR  = { MALE: 'bg-blue-100 text-blue-600', FEMALE: 'bg-pink-100 text-pink-600', OTHER: 'bg-purple-100 text-purple-600' };
+const GENDER_LABEL = { MALE: 'Masculin', FEMALE: 'Féminin', OTHER: 'Autre' };
+const GENDER_COLOR = { MALE: 'bg-blue-100 text-blue-600', FEMALE: 'bg-pink-100 text-pink-600', OTHER: 'bg-purple-100 text-purple-600' };
 
 const REG_STATUS = {
   DRAFT:              { label: 'Brouillon',   cls: 'bg-gray-200 text-gray-700' },
@@ -62,8 +61,8 @@ export default function MemberView({ member, accountUser, inscriptions }) {
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-8 gap-4">
         <div className="flex items-center gap-5">
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-inner shrink-0 ${GENDER_COLOR[member.gender] ?? 'bg-gray-100'}`}>
-            {GENDER_AVATAR[member.gender] ?? '🧒'}
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold shadow-inner shrink-0 ${GENDER_COLOR[member.gender] ?? 'bg-gray-100 text-gray-500'}`}>
+            {member.firstName?.[0]?.toUpperCase() ?? '?'}
           </div>
           <div>
             <Link href="/dashboard/family" className="text-gray-400 hover:text-[#7b68ee] text-sm transition-colors block mb-1">

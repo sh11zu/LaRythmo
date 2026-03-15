@@ -1,0 +1,14 @@
+{
+  "PARENTAL_AUTH": {
+    "title": "Autorisation parentale",
+    "body": "Je soussigné(e) {{GUARDIAN_NAME}}, autorise mon enfant {{MEMBER_NAME}} :\n\n- à pratiquer la gymnastique rythmique ou esthétique, la danse au sein du club « La Rythmo »,\n- à être conduit, en cas d'accident pendant son activité, au Centre Hospitalier pour y recevoir les soins nécessaires à son état,\n- à être transporté pour les déplacements du club par des parents bénévoles et/ou des éducateurs et dégage La Rythmo de toute responsabilité dans le transport de mon enfant,\n- à participer aux compétitions GR et/ou aux concours de danse pour lesquels mon enfant est inscrit.\n\nL'association décline toute responsabilité en cas de vol dans les vestiaires et sur toutes les installations sportives, que ce soit à l'occasion des entraînements, des spectacles ou des compétitions.\n\nFait à {{CITY}}, le {{DATE}}\n\nSignature :"
+  },
+  "SORTIE": {
+    "title": "Autorisation de sortie",
+    "legalText": "à sortir du gymnase dès la fin du cours et décharge La Rythmo de toute responsabilité pour ce qui pourrait advenir hors de l'enceinte du gymnase ou de la salle de cours."
+  },
+  "IMAGE": {
+    "title": "Droit à l'image",
+    "legalText": "que les photos de mon enfant prises lors des spectacles ou des compétitions apparaissent sur le site internet ou sur la page facebook de La Rythmo."
+  }
+}

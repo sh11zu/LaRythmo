@@ -69,16 +69,9 @@ export default async function AdminCourses() {
   }));
 
   return (
-    <div className="w-full max-w-screen-2xl mx-auto px-4 md:px-8 py-8">
-      <Link
-        href="/admin"
-        className="text-gray-500 hover:text-[#7b68ee] mb-6 inline-block font-medium transition-colors"
-      >
-        ← Retour Admin
-      </Link>
-
+    <div className="px-6 py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Gestion des Cours</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Cours et forfaits</h1>
         <p className="text-gray-500 mt-1">
           {courses.length} cours · {packages.length} forfait{packages.length !== 1 ? 's' : ''}
         </p>

@@ -56,14 +56,11 @@ export default function AdminInscriptionsClient({ inscriptions, seasons }) {
   }, {});
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-8">
+    <div className="px-6 py-8">
 
       {/* ── Header ── */}
       <div className="flex flex-wrap items-center gap-4 mb-8">
-        <Link href="/dashboard" className="text-gray-500 hover:text-[#7b68ee] transition-colors text-sm">
-          ← Retour
-        </Link>
-        <h1 className="text-3xl font-bold text-gray-800">Inscriptions</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Inscriptions</h1>
         <span className="text-sm text-gray-400 font-medium">({filtered.length} résultat{filtered.length !== 1 ? 's' : ''})</span>
 
         {/* Filtre saisons */}

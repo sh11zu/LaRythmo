@@ -106,6 +106,23 @@ body {
   width: 100%;
 }
 
+/* Animation d'entrée pour AdminShell (sans modifier le layout flex) */
+.admin-shell-enter {
+  opacity: 0;
+  transform: translateY(10px);
+  filter: blur(6px);
+  animation: dashEnter 450ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell-enter {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: none;
+  }
+}
+
 /* Définition de l'animation d'entrée pour les éléments de page du dashboard, qui fait apparaître les éléments en les faisant glisser vers le haut, en augmentant leur opacité et en réduisant le flou pour un effet d'entrée fluide et attrayant */
 @keyframes dashEnter {
   to {

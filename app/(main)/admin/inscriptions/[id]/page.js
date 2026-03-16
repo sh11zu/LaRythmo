@@ -190,7 +190,7 @@ export default async function AdminDossierPage({ params }) {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 md:px-8 py-8">
+    <div className="px-6 py-8 max-w-5xl">
 
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-8 gap-4">
@@ -199,9 +199,6 @@ export default async function AdminDossierPage({ params }) {
             {ins.first_name?.[0]?.toUpperCase() ?? '?'}
           </div>
           <div>
-            <Link href="/admin/inscriptions" className="text-gray-400 hover:text-[#7b68ee] text-sm transition-colors block mb-1">
-              ← Inscriptions
-            </Link>
             <h1 className="text-2xl font-bold text-gray-800">
               Dossier · {ins.first_name} {ins.last_name}
             </h1>

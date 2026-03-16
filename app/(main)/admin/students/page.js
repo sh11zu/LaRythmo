@@ -1,7 +1,6 @@
 // app/(main)/admin/students/page.js
 // Page d'administration des membres : annuaire, fiches, contacts d'urgence
 
-import Link from 'next/link';
 import pool from '@/lib/db';
 import MembersTable from './MembersTable';
 
@@ -29,16 +28,9 @@ export default async function AdminStudents() {
   }));
 
   return (
-    <div className="w-full max-w-400 mx-auto px-4 md:px-6 py-8">
-      <Link
-        href="/admin"
-        className="text-gray-500 hover:text-[#7b68ee] mb-6 inline-block font-medium transition-colors"
-      >
-        ← Retour Admin
-      </Link>
-
+    <div className="px-6 py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Annuaire des Membres</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Liste des adhérents</h1>
         <p className="text-gray-500 mt-1">{members.length} membre{members.length !== 1 ? 's' : ''} enregistré{members.length !== 1 ? 's' : ''}.</p>
       </div>
 

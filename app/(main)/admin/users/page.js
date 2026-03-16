@@ -1,7 +1,6 @@
 // app/(main)/admin/users/page.js
 // Page d'administration des utilisateurs : gestion des comptes parents et représentants légaux
 
-import Link from 'next/link';
 import pool from '@/lib/db';
 import UsersTable from './UsersTable';
 
@@ -19,16 +18,9 @@ export default async function AdminUsers() {
   }));
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-8">
-      <Link
-        href="/admin"
-        className="text-gray-500 hover:text-[#7b68ee] mb-6 inline-block font-medium transition-colors"
-      >
-        ← Retour Admin
-      </Link>
-
+    <div className="px-6 py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Gestion des Utilisateurs</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Utilisateurs</h1>
         <p className="text-gray-500 mt-1">{users.length} compte{users.length !== 1 ? 's' : ''} enregistré{users.length !== 1 ? 's' : ''}.</p>
       </div>
 
